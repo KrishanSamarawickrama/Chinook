@@ -35,24 +35,21 @@ else
 
 @code {
     private List<Artist> Artists;
-    [Inject] IDbContextFactory<ChinookContext> DbFactory { get; set; }
+    [Inject] IBaseRepository<Artist> ArtistsRepository { get; set; }
+    [Inject] IBaseRepository<Album> AlbumRepository { get; set; }
 
     protected override async Task OnInitializedAsync() {
         await InvokeAsync(StateHasChanged);
-        Artists = await GetArtists();
+        Artists = GetArtists();
     }
 
-    public async Task<List<Artist>> GetArtists()
-    {   
-        var dbContext = await DbFactory.CreateDbContextAsync();
-        var users = dbContext.Users.Include(a => a.UserPlaylists).ToList();
-        
-        return dbContext.Artists.ToList();
-    }
-
-    public async Task<List<Album>> GetAlbumsForArtist(int artistId)
+    private List<Artist> GetArtists()
     {
-        var dbContext = await DbFactory.CreateDbContextAsync();
-        return dbContext.Albums.Where(a => a.ArtistId == artistId).ToList();
+        return ArtistsRepository.Get().ToList();
+    }
+
+    public List<Album> GetAlbumsForArtist(int artistId)
+    {
+        return AlbumRepository.Get(a => a.ArtistId == artistId).ToList();
     }
 }
