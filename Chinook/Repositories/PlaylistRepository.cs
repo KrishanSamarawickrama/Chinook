@@ -4,65 +4,76 @@ namespace Chinook.Repositories;
 
 public interface IPlaylistRepository : IBaseRepository<Playlist>
 {
-    bool AddOrRemoveFavorite(string userId,long trackId);
+    bool AddOrRemoveFavorite(string userId, long trackId);
+    bool AddOrRemoveTrack(string userId, long trackId, long? playlistId, string? playlistName);
 }
 
 public class PlaylistRepository : BaseRepository<Playlist>, IPlaylistRepository
 {
     private readonly ChinookContext _dbContext;
     private readonly DbSet<Playlist> _dbSet;
-    
+
     public PlaylistRepository(IDbContextFactory<ChinookContext> dbFactory) : base(dbFactory)
     {
         _dbContext = dbFactory.CreateDbContext();
         _dbSet = _dbContext.Set<Playlist>();
     }
 
-    public bool AddOrRemoveFavorite(string userId,long trackId)
+    public bool AddOrRemoveFavorite(string userId, long trackId)
     {
         var track = _dbContext.Tracks.SingleOrDefault(t => t.TrackId == trackId);
         if (track == null) return false;
-       
+
         var userPlayList = _dbContext.Playlists.FirstOrDefault(p =>
             p.UserPlaylists.Any(up => up.UserId == userId && up.Playlist.Name == "My favorite tracks"));
-        
-        var remove = userPlayList != null && track != null && userPlayList.Tracks.Contains(track);
+
+        return AddOrRemoveTrack(userId, trackId, userPlayList?.PlaylistId, "My favorite tracks");
+    }
+
+    public bool AddOrRemoveTrack(string userId, long trackId, long? playlistId, string? playlistName)
+    {
+        var track = _dbContext.Tracks.SingleOrDefault(t => t.TrackId == trackId);
+        if (track == null) return false;
+
+        var playlist = _dbContext.UserPlaylists.Include(z => z.Playlist).ThenInclude(y => y.Tracks)
+            .SingleOrDefault(x => x.UserId == userId && x.PlaylistId == playlistId)
+            ?.Playlist;
+
+        var remove = playlist != null && playlist.Tracks.Contains(track);
         
         if (remove)
         {
-            userPlayList.Tracks.Remove(track);
-            _dbSet.Attach(userPlayList);
-            _dbContext.Entry(userPlayList).State = EntityState.Modified;
+            playlist.Tracks.Remove(track);
+            _dbSet.Attach(playlist);
+            _dbContext.Entry(playlist).State = EntityState.Modified;
         }
         else
         {
-            if (userPlayList == null)
+            if (playlist == null)
             {
-               userPlayList = _dbContext.Playlists.SingleOrDefault(p => p.Name == "My favorite tracks");
-               userPlayList ??= new Playlist()
-                            {
-                                Name = "My favorite tracks"
-                            };
-               userPlayList.UserPlaylists = new List<UserPlaylist>()
-               {
-                   new UserPlaylist()
-                   {
-                       PlaylistId = userPlayList.PlaylistId,
-                       UserId = userId
-                   }
-               };
-               userPlayList.Tracks.Add(track);
-               _dbSet.Add(userPlayList);
+                playlist = new Playlist()
+                {
+                    Name = playlistName
+                };
+                
+                playlist.UserPlaylists = new List<UserPlaylist>()
+                {
+                    new UserPlaylist()
+                    {
+                        UserId = userId
+                    }
+                };
+                playlist.Tracks.Add(track);
+                _dbSet.Add(playlist);
             }
             else
             {
-                userPlayList.Tracks.Add(track);
-                _dbSet.Attach(userPlayList);
-                _dbContext.Entry(userPlayList).State = EntityState.Modified;
+                playlist.Tracks.Add(track);
+                _dbSet.Attach(playlist);
+                _dbContext.Entry(playlist).State = EntityState.Modified;
             }
-            
         }
-        
+
         _dbContext.SaveChanges();
         return true;
     }

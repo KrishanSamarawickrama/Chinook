@@ -116,7 +116,9 @@ else
     private void RemoveTrack(long trackId)
     {
         CloseInfoMessage();
-
+        var track = Playlist.Tracks.FirstOrDefault(t => t.TrackId == trackId);
+        PlaylistRepository.AddOrRemoveTrack(CurrentUserId, trackId, PlaylistId, null);
+        InfoMessage = $"Track {track.TrackName} removed from playlist {Playlist.Name}.";
     }
 
     private void CloseInfoMessage()
