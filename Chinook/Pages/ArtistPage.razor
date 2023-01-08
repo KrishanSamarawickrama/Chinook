@@ -62,6 +62,7 @@ else
     [CascadingParameter] private Task<AuthenticationState> authenticationState { get; set; }
     [Inject] IBaseRepository<Artist> ArtistRepository { get; set; }
     [Inject] IBaseRepository<Track> TrackRepository { get; set; }
+    [Inject] IPlaylistRepository PlaylistRepository { get; set; }
     
     private Modal PlaylistDialog { get; set; }
 
@@ -98,12 +99,14 @@ else
     private void FavoriteTrack(long trackId)
     {
         var track = Tracks.FirstOrDefault(t => t.TrackId == trackId);
+        PlaylistRepository.AddOrRemoveFavorite(CurrentUserId, trackId);
         InfoMessage = $"Track {track.ArtistName} - {track.AlbumTitle} - {track.TrackName} added to playlist Favorites.";
     }
 
     private void UnfavoriteTrack(long trackId)
     {
         var track = Tracks.FirstOrDefault(t => t.TrackId == trackId);
+        PlaylistRepository.AddOrRemoveFavorite(CurrentUserId, trackId);
         InfoMessage = $"Track {track.ArtistName} - {track.AlbumTitle} - {track.TrackName} removed from playlist Favorites.";
     }
 

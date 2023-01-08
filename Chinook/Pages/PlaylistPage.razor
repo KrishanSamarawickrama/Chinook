@@ -64,7 +64,7 @@ else
     [Parameter] public long PlaylistId { get; set; }
     [CascadingParameter] private Task<AuthenticationState> authenticationState { get; set; }
     
-    [Inject] IBaseRepository<Playlist> PlaylistRepository { get; set; }
+    [Inject] IPlaylistRepository PlaylistRepository { get; set; }
 
     private Chinook.ClientModels.Playlist Playlist;
     private string CurrentUserId;
@@ -102,12 +102,14 @@ else
     private void FavoriteTrack(long trackId)
     {
         var track = Playlist.Tracks.FirstOrDefault(t => t.TrackId == trackId);
+        PlaylistRepository.AddOrRemoveFavorite(CurrentUserId, trackId);
         InfoMessage = $"Track {track.ArtistName} - {track.AlbumTitle} - {track.TrackName} added to playlist Favorites.";
     }
 
     private void UnfavoriteTrack(long trackId)
     {
         var track = Playlist.Tracks.FirstOrDefault(t => t.TrackId == trackId);
+        PlaylistRepository.AddOrRemoveFavorite(CurrentUserId, trackId);
         InfoMessage = $"Track {track.ArtistName} - {track.AlbumTitle} - {track.TrackName} removed from playlist Favorites.";
     }
 
