@@ -36,7 +36,7 @@
     private string CurrentUserId;
 
     [Inject]
-    IBaseRepository<UserPlaylist> UserPlayListRepository { get; set; }
+    IUserPlaylistRepository UserPlayListRepository { get; set; }
 
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
@@ -63,5 +63,4 @@
     {
         return UserPlayListRepository.Get(u => u.UserId == CurrentUserId, null, "Playlist").ToList();
     }
-
 }

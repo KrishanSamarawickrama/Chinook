@@ -5,8 +5,8 @@ namespace Chinook.Repositories;
 
 public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : class
 {
-    private readonly ChinookContext _dbContext;
-    private readonly DbSet<TEntity> _dbSet;
+    protected readonly ChinookContext _dbContext;
+    protected readonly DbSet<TEntity> _dbSet;
     
     public BaseRepository(IDbContextFactory<ChinookContext> dbFactory)
     {
@@ -50,6 +50,7 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
     public virtual void Insert(TEntity entity)
     {
         _dbSet.Add(entity);
+        _dbContext.SaveChanges();
     }
 
     public virtual void Delete(object id)
@@ -67,11 +68,13 @@ public class BaseRepository<TEntity> : IBaseRepository<TEntity> where TEntity : 
         }
 
         _dbSet.Remove(entityToDelete);
+        _dbContext.SaveChanges();
     }
 
     public virtual void Update(TEntity entityToUpdate)
     {
         _dbSet.Attach(entityToUpdate);
         _dbContext.Entry(entityToUpdate).State = EntityState.Modified;
+        _dbContext.SaveChanges();
     }
 }

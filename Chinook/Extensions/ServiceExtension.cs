@@ -7,6 +7,7 @@ public static class ServiceExtension
     {
         services.AddTransient(typeof(IBaseRepository<>), typeof(BaseRepository<>));
         services.AddTransient<IPlaylistRepository,PlaylistRepository>();
+        services.AddTransient<IUserPlaylistRepository,UserPlaylistRepository>();
         return services;
     }
 }

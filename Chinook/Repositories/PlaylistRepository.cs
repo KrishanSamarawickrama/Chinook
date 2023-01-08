@@ -10,13 +10,8 @@ public interface IPlaylistRepository : IBaseRepository<Playlist>
 
 public class PlaylistRepository : BaseRepository<Playlist>, IPlaylistRepository
 {
-    private readonly ChinookContext _dbContext;
-    private readonly DbSet<Playlist> _dbSet;
-
     public PlaylistRepository(IDbContextFactory<ChinookContext> dbFactory) : base(dbFactory)
     {
-        _dbContext = dbFactory.CreateDbContext();
-        _dbSet = _dbContext.Set<Playlist>();
     }
 
     public bool AddOrRemoveFavorite(string userId, long trackId)
